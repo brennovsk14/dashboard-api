@@ -1,0 +1,182 @@
+{
+	"info": {
+		"name": "Dashboard API",
+		"description": "Testes dos endpoints de leitura do dashboard.api (vendas mensais, vendas por região e pedidos).",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:8080",
+			"type": "string"
+		}
+	],
+	"item": [
+		{
+			"name": "Vendas Mensais",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/vendas-mensais/get?pagina=1&page-size=20",
+					"host": [ "{{baseUrl}}" ],
+					"path": [ "vendas-mensais", "get" ],
+					"query": [
+						{ "key": "pagina", "value": "1" },
+						{ "key": "page-size", "value": "20" }
+					]
+				}
+			},
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+							"",
+							"pm.test(\"Headers de paginação presentes\", () => {",
+							"    pm.response.to.have.header(\"x-total-content\");",
+							"    pm.response.to.have.header(\"x-total-pages\");",
+							"    pm.response.to.have.header(\"x-pagina-atual\");",
+							"});",
+							"",
+							"pm.test(\"Total de registros é 12 (um por mês)\", () => {",
+							"    pm.expect(pm.response.headers.get(\"x-total-content\")).to.eql(\"12\");",
+							"});",
+							"",
+							"pm.test(\"Body é um array com os campos esperados\", () => {",
+							"    const json = pm.response.json();",
+							"    pm.expect(json).to.be.an(\"array\");",
+							"    if (json.length > 0) {",
+							"        pm.expect(json[0]).to.have.all.keys(",
+							"            \"uuid\", \"mes\", \"eletronicos\", \"vestuario\", \"alimentos\", \"livros\"",
+							"        );",
+							"    }",
+							"});"
+						]
+					}
+				}
+			]
+		},
+		{
+			"name": "Vendas por Região",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/vendas-por-regiao/get?pagina=1&page-size=20",
+					"host": [ "{{baseUrl}}" ],
+					"path": [ "vendas-por-regiao", "get" ],
+					"query": [
+						{ "key": "pagina", "value": "1" },
+						{ "key": "page-size", "value": "20" }
+					]
+				}
+			},
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+							"",
+							"pm.test(\"Headers de paginação presentes\", () => {",
+							"    pm.response.to.have.header(\"x-total-content\");",
+							"    pm.response.to.have.header(\"x-total-pages\");",
+							"    pm.response.to.have.header(\"x-pagina-atual\");",
+							"});",
+							"",
+							"pm.test(\"Total de registros é 5 (uma por região)\", () => {",
+							"    pm.expect(pm.response.headers.get(\"x-total-content\")).to.eql(\"5\");",
+							"});",
+							"",
+							"pm.test(\"Body é um array com os campos esperados\", () => {",
+							"    const json = pm.response.json();",
+							"    pm.expect(json).to.be.an(\"array\");",
+							"    if (json.length > 0) {",
+							"        pm.expect(json[0]).to.have.all.keys(",
+							"            \"uuid\", \"regiao\", \"clientes\", \"pedidos\", \"receita\", \"ticketMedio\", \"satisfacao\"",
+							"        );",
+							"    }",
+							"});",
+							"",
+							"pm.test(\"Satisfação está sempre entre 0 e 10\", () => {",
+							"    const json = pm.response.json();",
+							"    json.forEach(r => {",
+							"        pm.expect(r.satisfacao).to.be.at.least(0).and.at.most(10);",
+							"    });",
+							"});"
+						]
+					}
+				}
+			]
+		},
+		{
+			"name": "Pedidos",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/pedidos/get?pagina=1&page-size=50",
+					"host": [ "{{baseUrl}}" ],
+					"path": [ "pedidos", "get" ],
+					"query": [
+						{ "key": "pagina", "value": "1" },
+						{ "key": "page-size", "value": "50" }
+					]
+				}
+			},
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+							"",
+							"pm.test(\"Headers de paginação presentes\", () => {",
+							"    pm.response.to.have.header(\"x-total-content\");",
+							"    pm.response.to.have.header(\"x-total-pages\");",
+							"    pm.response.to.have.header(\"x-pagina-atual\");",
+							"});",
+							"",
+							"pm.test(\"Total de registros é 300\", () => {",
+							"    pm.expect(pm.response.headers.get(\"x-total-content\")).to.eql(\"300\");",
+							"});",
+							"",
+							"pm.test(\"Respeita o page-size pedido (50)\", () => {",
+							"    const json = pm.response.json();",
+							"    pm.expect(json.length).to.eql(50);",
+							"});",
+							"",
+							"pm.test(\"Body tem os campos esperados\", () => {",
+							"    const json = pm.response.json();",
+							"    pm.expect(json[0]).to.have.all.keys(",
+							"        \"uuid\", \"data\", \"regiao\", \"categoria\", \"quantidade\",",
+							"        \"valorUnitario\", \"valorTotal\", \"avaliacao\"",
+							"    );",
+							"});",
+							"",
+							"pm.test(\"Avaliação está sempre entre 1 e 5\", () => {",
+							"    const json = pm.response.json();",
+							"    json.forEach(p => {",
+							"        pm.expect(p.avaliacao).to.be.at.least(1).and.at.most(5);",
+							"    });",
+							"});",
+							"",
+							"pm.test(\"valorTotal bate com quantidade * valorUnitario\", () => {",
+							"    const json = pm.response.json();",
+							"    json.forEach(p => {",
+							"        const esperado = Math.round(p.quantidade * p.valorUnitario * 100) / 100;",
+							"        pm.expect(Math.abs(p.valorTotal - esperado)).to.be.below(0.02);",
+							"    });",
+							"});"
+						]
+					}
+				}
+			]
+		}
+	]
+}
